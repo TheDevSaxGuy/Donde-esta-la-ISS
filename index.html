@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+      integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+      integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+      crossorigin=""
+    ></script>
+    <style>
+      #mapid {
+        height: 180px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Donde esta el ISS</h1>
+    <p>latitud: <span id="lat"></span></p>
+    <p>longitud: <span id="long"></span></p>
+    <p>Esta viajando a una velocidad de <span id="vel"></span> km/h</p>
+    <div id="mapid"></div>
+    <script>
+      const mymap = L.map("mapid").setView([0, 0], 1);
+
+      const myIcon = L.icon({
+        iconUrl: "ISSpng.png",
+        iconSize: [50, 32],
+        iconAnchor: [25, 16],
+        popupAnchor: [-3, -76],
+        shadowSize: [68, 95],
+        shadowAnchor: [22, 94]
+      });
+
+      const marker = L.marker([0, 0], { icon: myIcon }).addTo(mymap);
+      const attribution =
+        '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors';
+      const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      const tiles = L.tileLayer(tileUrl, { attribution });
+      const api_url = "https://api.wheretheiss.at/v1/satellites/25544";
+
+      tiles.addTo(mymap);
+
+      async function getISS() {
+        const response = await fetch(api_url);
+        const data = await response.json();
+        const { latitude, longitude, velocity } = data;
+        document.getElementById("lat").innerHTML = latitude;
+        document.getElementById("long").innerHTML = longitude;
+        document.getElementById("vel").innerHTML = velocity.toFixed(2);
+        marker.setLatLng([latitude, longitude]);
+        mymap.setView([latitude,longitude],2);
+      }
+      getISS();
+      setInterval(getISS, 1000);
+    </script>
+  </body>
+</html>
