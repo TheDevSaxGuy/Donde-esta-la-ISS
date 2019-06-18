@@ -23,21 +23,38 @@
         width: 600px;
         height: 180px;
       }
+      body{
+        background: #fe5f55;
+        color: #293462;
+      }
+      .jumbotron{
+        background: #fff1c1;
+        color: #a64942;
+      }
+      #main{
+        background: #fff1c1;
+        color:#293462;
+        padding:10px;
+      }
     </style>
   </head>
   <body>
     <div class="container">
+      <div id="main">
         <h1>Donde esta el ISS</h1>
-
-      <div class="jumbotron">
-        <p>Esta es una pagina dinamica, que te permite ver en tiempo real en donde se encuentra la Estacion Internacional (Internatational Spaceship Station)</p>
-        <p>Datos obtenidos inmediatamente mediante la API <a href="https://wheretheiss.at/">wheretheiss.at</a></p>
-        <p>Para mostrarlo se utilizo el framework leaflet.js</p>
-      </div>
+        <hr>
     <p><b>Latitud:</b> <span id="lat"></span></p>
     <p><b>Longitud: </b><span id="long"></span></p>
     <p>Esta viajando a una velocidad de <span id="vel"></span> km/h</p>
     <div id="mapid"></div>
+    </div>
+    <br>
+    <div class="jumbotron">
+      <h3>Acerca de:</h3>
+        <p>Esta es una pagina dinamica, que te permite ver en tiempo real en donde se encuentra la Estacion Internacional (Internatational Spaceship Station o ISS)</p>
+        <p>Datos obtenidos inmediatamente mediante la API <a href="https://wheretheiss.at/">wheretheiss.at</a></p>
+        <p>Para mostrarlo se utilizo el framework leaflet.js</p>
+      </div>
   </div>
     <script>
       const mymap = L.map("mapid").setView([0, 0], 1);
