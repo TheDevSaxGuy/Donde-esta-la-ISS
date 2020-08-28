@@ -1,92 +1,86 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=\, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Donde esta el ISS</title>
     <link
       rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
-      integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+      href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+      integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
       crossorigin=""
     />
-    <link rel="stylesheet" href="bootstrap.min.css">
-    <link rel="icon" type="image/png" href="ISSpng.png" />
     <script
-      src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
-      integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+      src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+      integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
       crossorigin=""
     ></script>
     <style>
-      #mapid {
-        width: 600px;
-        height: 180px;
-      }
-      body{
-        background: #fe5f55;
-        color: #293462;
-      }
-      .jumbotron{
-        background: #fff1c1;
-        color: #a64942;
-      }
-      #main{
-        background: #fff1c1;
-        color:#293462;
-        padding:10px;
+      #issMap {
+        height: 360px;
       }
     </style>
+
+    <title>Fetch JSON from API and map lat lon</title>
   </head>
   <body>
-    <div class="container">
-      <div id="main">
-        <h1>Donde esta el ISS</h1>
-        <hr>
-    <p><b>Latitud:</b> <span id="lat"></span></p>
-    <p><b>Longitud: </b><span id="long"></span></p>
-    <p>Esta viajando a una velocidad de <span id="vel"></span> km/h</p>
-    <div id="mapid"></div>
-    </div>
-    <br>
-    <div class="jumbotron">
-      <h3>Acerca de:</h3>
-        <p>Esta es una pagina dinamica, que te permite ver en tiempo real en donde se encuentra la Estacion Internacional (Internatational Spaceship Station o ISS)</p>
-        <p>Datos obtenidos inmediatamente mediante la API <a href="https://wheretheiss.at/">wheretheiss.at</a></p>
-        <p>Para mostrarlo se utilizo el framework leaflet.js</p>
-      </div>
-  </div>
-    <script>
-      const mymap = L.map("mapid").setView([0, 0], 1);
+    <h1>Where is the ISS?</h1>
 
-      const myIcon = L.icon({
-        iconUrl: "ISSpng.png",
+    <p>
+      latitude: <span id="lat"></span>°<br />
+      longitude: <span id="lon"></span>°
+    </p>
+
+    <div id="issMap"></div>
+
+    <script>
+      // Making a map and tiles
+      const mymap = L.map('issMap').setView([0, 0], 1);
+      const attribution =
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+      const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      const tiles = L.tileLayer(tileUrl, { attribution });
+      tiles.addTo(mymap);
+
+      // Making a marker with a custom icon
+      const issIcon = L.icon({
+        iconUrl: 'iss200.png',
         iconSize: [50, 32],
-        iconAnchor: [25, 16],
-        popupAnchor: [-3, -76],
-        shadowSize: [68, 95],
-        shadowAnchor: [22, 94]
+        iconAnchor: [25, 16]
+      });
+      let marker = L.marker([0, 0], { icon: issIcon }).addTo(mymap);
+
+      mymap.on('zoomend', function() {
+        const zoom = mymap.getZoom() + 1;
+        const w = 50 * zoom;
+        const h = 32 * zoom;
+        issIcon.options.iconSize = [w, h];
+        issIcon.options.iconAnchor = [w / 2, h / 2];
+        mymap.removeLayer(marker);
+        let latlng = marker.getLatLng();
+        marker = L.marker([0, 0], { icon: issIcon }).addTo(mymap);
+        marker.setLatLng(latlng);
       });
 
-      const marker = L.marker([0, 0], { icon: myIcon }).addTo(mymap);
-      const attribution =
-        '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors';
-      const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-      const tiles = L.tileLayer(tileUrl, { attribution });
-      const api_url = "https://api.wheretheiss.at/v1/satellites/25544";
+      const api_url = 'https://api.wheretheiss.at/v1/satellites/25544';
 
-      tiles.addTo(mymap);
+      let firstTime = true;
 
       async function getISS() {
         const response = await fetch(api_url);
         const data = await response.json();
-        const { latitude, longitude, velocity } = data;
-        document.getElementById("lat").innerHTML = latitude.toFixed(2);
-        document.getElementById("long").innerHTML = longitude.toFixed(2);
-        document.getElementById("vel").innerHTML = velocity.toFixed(2);
+        const { latitude, longitude } = data;
+
         marker.setLatLng([latitude, longitude]);
-        mymap.setView([latitude,longitude],2);
+        if (firstTime) {
+          mymap.setView([latitude, longitude], 2);
+          firstTime = false;
+        }
+        document.getElementById('lat').textContent = latitude.toFixed(2);
+        document.getElementById('lon').textContent = longitude.toFixed(2);
       }
+
       getISS();
       setInterval(getISS, 1000);
     </script>
